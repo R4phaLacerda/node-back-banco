@@ -13,22 +13,35 @@ class TarefaModel {
     })
   };
 
-  update = (id, concluida) => {
-    const tarefa = this.tarefas.find((t) => t.id === Number(id));
-    if (tarefa) {
-      tarefa.concluida = concluida !== undefined ? concluida : tarefa.concluida;
+  update = async (id, concluida, descricao) => {
+    try {
+      const tarefa = await prisma.task.update({
+        where: { id },
+        data: {
+          concluida: concluida !== undefined ? concluida : true,
+          descricao,
+        },
+      });
+
       return tarefa;
-    }
-    return null;
+    } catch (error) {
+      console.log("Error: ", error);
+      throw error;
+    };
   };
 
-  delete = (id) => {
-    const index = this.tarefas.findIndex((t) => t.id === Number(id));
-    if (index !== -1) {
-      this.tarefas.splice(index, 1);
-      return true;
+  delete = async (id) => {
+    try {
+      const tarefaDeletada = await prisma.task.delete({
+        where: { id },
+      });
+
+      return tarefaDeletada;
+    }catch (error) {
+      console.log("Error ao deletar tarefa!", error);
+      throw error;
     }
-    return false;
-  };
-}
+  }
+};
+
 export default new TarefaModel();

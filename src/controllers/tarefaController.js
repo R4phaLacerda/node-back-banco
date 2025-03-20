@@ -11,13 +11,13 @@ class TarefaController {
     }
   };
 
-  create = ( req, res) => {
+  create = async ( req, res) => {
     const { descricao } = req.body;
     try {
       if (!descricao) {
         return res.status(400).json({ erro: "Descrição é obrigatória" });
     }
-    const novaTarefa = tarefaModel.create(descricao);
+    const novaTarefa = await tarefaModel.create(descricao);
     res.status(201).json(novaTarefa);
     } catch (error) {
       console.error(error);
@@ -25,20 +25,40 @@ class TarefaController {
     }
   };
 
-  update = ({ params: { id }, body: { concluida } }, res) => {
-    const tarefaAtualizada = tarefaModel.update(id, concluida);
-    if (!tarefaAtualizada) {
-      return res.status(404).json({ erro: "Tarefa não encontrada" });
+  update = async (req,res) => {
+    const {id} = req.params;
+    const { concluida, descricao } = req.body;
+
+    try {
+      const tarefaAtualizada = await tarefaModel.update(Number(id), concluida, descricao);
+
+      if (!tarefaAtualizada) {
+        return res.status(404).json({ erro: "Tarefa não encontrada" });
+      }
+      res.json(tarefaAtualizada);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ erro: "Erro ao atualizar tarefa" });
     }
-    res.json(tarefaAtualizada);
   };
 
-  delete = ({ params: { id } }, res) => {
-    const sucesso = tarefaModel.delete(id);
-    if (!sucesso) {
+  delete = async (req, res) => {
+    const { id } = req.params;
+
+    try{
+      const sucesso = await tarefaModel.delete(Number(id));
+
+      if (!sucesso) {
       return res.status(404).json({ erro: "Tarefa não encontrada" });
+      }
+
+      res.status(200).send({ message: "Tarefa deletada com sucesso" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ erro: "Erro ao deletar tarefa" });
     }
-    res.status(204).send();
-  };
-}
+  }
+  
+};
+
 export default new TarefaController();
